@@ -1,14 +1,12 @@
 export class Boot extends Phaser.Scene {
-
   constructor() {
     super('Boot');
   }
 
-  preload () {
+  preload() {
     this.load.setPath('./assets');
-    this.load.image('court', 'court.jpg');
-    this.load.image('seats', 'seats.png');
-    this.load.image('barrier', 'barrier.jpg');
+    this.load.image('preload-bg', 'preload-bg.jpg');
+    this.load.image('loading-bar', 'loading-bar.png');
   }
 
   create() {

@@ -2,7 +2,7 @@ import './style.css';
 import Phaser from 'phaser';
 import { Boot } from './scenes/Boot';
 import { Preload } from './scenes/Preload';
-import { Play } from './scenes/Play';
+import { Game } from './scenes/Game';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -16,9 +16,13 @@ const config: Phaser.Types.Core.GameConfig = {
     width: 350,
     height: 350 / (800 / 1250)
   },
+  input: {
+    mouse: {
+      target: window
+    }
+  },
   parent: 'game-container',
-  pixelArt: true,
-  autoFocus: true,
+  pixelArt: false,
   physics: {
     default: 'arcade',
     arcade: {
@@ -31,7 +35,7 @@ const config: Phaser.Types.Core.GameConfig = {
     fullscreenTarget: 'game-container',
     parent: 'game-container'
   },
-  scene: [Boot, Preload, Play]
+  scene: [Boot, Preload, Game]
 };
 
 new Phaser.Game(config);

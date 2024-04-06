@@ -1,26 +1,15 @@
-import { LoadingBar } from '@/entities/LoadingBar';
-
 export class Preload extends Phaser.Scene {
-  loadingBar: LoadingBar;
   constructor() {
     super('Preload');
   }
 
   preload() {
-    this.add.sprite(0, 0, 'preload-bg').setOrigin(0, 0);
-    this.loadingBar = new LoadingBar(this, 'loading-bar', {
-      onComplete: () => {
-        this.scene.start('Game');
-      }
-    });
-
     this.load.setPath('./assets');
 
+    this.load.image('invisible', 'invisible.png');
     this.load.image('court', 'court.jpg');
     this.load.image('seats', 'seats.png');
     this.load.image('barrier', 'barrier.jpg');
-
-    this.load.image('invisible', 'invisible.png');
     this.load.image('ball', 'ball.png');
     this.load.image('backboard', 'backboard.jpg');
     this.load.image('shoot-particle', 'shoot-particle.png');
@@ -33,7 +22,9 @@ export class Preload extends Phaser.Scene {
     this.loadAudio('net');
   }
 
-  create() {}
+  create() {
+    this.scene.start('Play');
+  }
 
   loadAudio(path: string) {
     this.load.audio(

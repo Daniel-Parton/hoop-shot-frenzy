@@ -1,8 +1,9 @@
-import { GAME_CONFIG } from '@/config';
 import { LocalStorageHelper } from '@/utils/LocalStorageHelper';
+import { EventController } from '@/config/EventController';
 
 const baseKey = 'hoop_';
 export class Score extends Phaser.GameObjects.Container {
+  gameEvents: EventController;
   bestScoreKey = `${baseKey}bestScore`;
 
   currentText: Phaser.GameObjects.Text;
@@ -16,6 +17,7 @@ export class Score extends Phaser.GameObjects.Container {
 
   constructor(scene: Phaser.Scene) {
     super(scene, 0, 0);
+    this.gameEvents = new EventController(this.scene);
     scene.add.existing(this);
     scene.physics.add.existing(this as any);
     this.init();
@@ -43,24 +45,10 @@ export class Score extends Phaser.GameObjects.Container {
 
     this.add([this.currentText, this.bestText]).setDepth(4);
 
-    this.scene.events.on(
-      GAME_CONFIG.events.score,
-      () => {
-        this.increaseScore();
-        this.scene.tweens.add({
-          targets: this.currentText,
-          duration: 100,
-          scale: 1.1,
-          repeat: 2,
-          alpha: 0,
-          yoyo: true
-        });
-      },
-      this
-    );
+    this.gameEvents.score.listen(this._handleScore, this);
   }
 
-  private increaseScore() {
+  private _handleScore() {
     ++this.current;
     this.scene.time.delayedCall(
       500,
@@ -74,5 +62,14 @@ export class Score extends Phaser.GameObjects.Container {
       this.bestText.text = 'Best: ' + this.best.toLocaleString();
       LocalStorageHelper.set(this.bestScoreKey, this.best);
     }
+
+    this.scene.tweens.add({
+      targets: this.currentText,
+      duration: 100,
+      scale: 1.1,
+      repeat: 2,
+      alpha: 0,
+      yoyo: true
+    });
   }
 }

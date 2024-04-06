@@ -1,9 +1,11 @@
-import { GAME_CONFIG } from '@/config';
+import { EventController } from '@/config/EventController';
 import { Backboard } from '@/entities/Backboard';
 import { Ball } from '@/entities/Ball';
 import { Score } from '@/entities/Score';
 
-export class Play extends Phaser.Scene {
+export class Game extends Phaser.Scene {
+  gameEvents: EventController;
+
   get height() {
     return this.scale.height;
   }
@@ -24,7 +26,8 @@ export class Play extends Phaser.Scene {
   score: Score;
 
   constructor() {
-    super('Play');
+    super('Game');
+    this.gameEvents = new EventController(this);
   }
 
   create() {
@@ -36,27 +39,14 @@ export class Play extends Phaser.Scene {
       0.5
     );
 
-    this.backboard.initBallCollision(this.ball);
+    this.backboard.handleBallCollision(this.ball);
 
-    this.events.on(
-      GAME_CONFIG.events.ballAtApex,
-      () => {
-        this.ball.setDepth(this.backboard.net.depth - 1);
-      },
-      this
-    );
+    this.gameEvents.ballAtApex.listen(() => {
+      this.ball.setDepth(this.backboard.net.depth - 1);
+    }, this);
   }
 
-  update(_, delta: number): void {
-    if (this.backboard.hasScored(this.ball)) {
-      this.ball.justScored = true;
-      this.events.emit(GAME_CONFIG.events.score);
-    }
-
-    if (this.ball.y > this.height + 250) {
-      this.ball.reset();
-    }
-  }
+  update(_, delta: number): void {}
 
   initEnvironment() {
     this.seats = this.add.image(0, 0, 'seats').setOrigin(0, 0).setDepth(0);

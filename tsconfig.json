@@ -27,9 +27,9 @@
         "@/utils/*": [
             "utils/*"
         ],
-        "@/config": [
-            "config"
-        ]
+        "@/config/*": [
+            "config/*"
+        ],
       }
     },
     "include": ["./src"]
