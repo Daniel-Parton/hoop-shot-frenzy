@@ -5,5 +5,6 @@ export const GameColors = {
   white: hexColor('#FFFFFF'),
   black: hexColor('#000000'),
   gray: hexColor('#696969'),
-  loadingBar: hexColor('#dd6b20')
+  debug: hexColor('#ff0000'),
+  primary: hexColor('#dd6b20')
 };

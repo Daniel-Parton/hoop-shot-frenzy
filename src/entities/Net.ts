@@ -1,6 +1,7 @@
 import { EventController } from '@/config/EventController';
 import { Ball } from './Ball';
 import { GameDepths } from '@/config/GameDepths';
+import { GameColors } from '@/config/GameColors';
 
 export class Net extends Phaser.GameObjects.Container {
   gameEvents: EventController;
@@ -8,7 +9,6 @@ export class Net extends Phaser.GameObjects.Container {
   image: Phaser.Physics.Arcade.Sprite;
   leftWall: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   rightWall: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
-  scoreIndicator: Phaser.GameObjects.Image;
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y);
     this.gameEvents = new EventController(this.scene);
@@ -32,7 +32,7 @@ export class Net extends Phaser.GameObjects.Container {
     this.leftWall = this._addWall(imageX + 5);
     this.rightWall = this._addWall(imageX + imageWidth - 5);
 
-    this.gameEvents.score.listen(() => {
+    this.gameEvents.ballScored.listen(() => {
       this._animate();
       this.scene.sound.play('net');
     }, this);
@@ -75,7 +75,7 @@ export class Net extends Phaser.GameObjects.Container {
       .sprite(x, 15, 'invisible')
       .setBodySize(1, this.image.displayHeight - 15, false)
       .setImmovable(true)
-      .setDebugBodyColor(0x00ff00)
+      .setDebugBodyColor(GameColors.debug.color)
       .refreshBody();
 
     this.add(wall);

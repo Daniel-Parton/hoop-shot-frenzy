@@ -33,8 +33,8 @@ export class Rim extends Phaser.GameObjects.Container {
     this.leftRim = this._addSideRim(rimX);
     this.rightRim = this._addSideRim(rimX + width * 0.9);
     this.scoreIndicator = this.scene.physics.add
-      .sprite(rimX + 10, 20, 'invisible')
-      .setBodySize(width - 20, 1, false)
+      .sprite(rimX + 30, 30, 'invisible')
+      .setBodySize(width - 60, 1, false)
       .setOrigin(0, 0)
       .setDebugBodyColor(0x00ff00);
 
@@ -57,7 +57,7 @@ export class Rim extends Phaser.GameObjects.Container {
       () => {
         if (!ball.justScored) {
           ball.justScored = true;
-          this.gameEvents.score.fire();
+          this.gameEvents.ballScored.fire();
         }
       },
       () => {
@@ -88,7 +88,13 @@ export class Rim extends Phaser.GameObjects.Container {
     this.scene.physics.add.collider(
       ball,
       sideRim,
-      null,
+      (b: Ball) => {
+        b.tween({
+          rotation: ball.body.velocity.x > 0 ? Math.PI / 4 : -Math.PI / 4,
+          duration: 600
+        });
+        this._playSound();
+      },
       () => {
         return ball.body.velocity.y >= 0;
       },
@@ -98,5 +104,9 @@ export class Rim extends Phaser.GameObjects.Container {
 
   private _handleBallReset() {
     this.justScored = false;
+  }
+
+  private _playSound() {
+    this.scene.sound.play('backboard', { volume: 0.5 });
   }
 }

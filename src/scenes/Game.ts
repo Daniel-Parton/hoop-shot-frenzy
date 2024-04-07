@@ -1,7 +1,9 @@
 import { EventController } from '@/config/EventController';
+import { GameDepths } from '@/config/GameDepths';
 import { Backboard } from '@/entities/Backboard';
 import { Ball } from '@/entities/Ball';
 import { Score } from '@/entities/Score';
+import { getSceneBounds } from '@/utils/SceneHelper';
 
 export class Game extends Phaser.Scene {
   gameEvents: EventController;
@@ -24,6 +26,7 @@ export class Game extends Phaser.Scene {
   barrier: Phaser.GameObjects.Image;
   seats: Phaser.GameObjects.Image;
   score: Score;
+  missIndicator: Phaser.GameObjects.Image;
 
   constructor() {
     super('Game');
@@ -34,6 +37,7 @@ export class Game extends Phaser.Scene {
     this.cameras.main.fadeIn(250);
 
     this.initEnvironment();
+
     this.score = new Score(this);
     this.backboard = new Backboard(this);
     this.ball = new Ball(this, this.center.x, this.height - 200).setOrigin(
@@ -42,10 +46,7 @@ export class Game extends Phaser.Scene {
     );
 
     this.backboard.handleBallCollision(this.ball);
-
-    this.gameEvents.ballAtApex.listen(() => {
-      this.ball.setDepth(this.backboard.net.depth - 1);
-    }, this);
+    this.initMissIndicator(this.ball);
   }
 
   update(_, delta: number): void {}
@@ -56,11 +57,46 @@ export class Game extends Phaser.Scene {
     this.barrier = this.add
       .image(0, this.seats.height - 28, 'barrier')
       .setOrigin(0, 0)
-      .setDepth(1);
+      .setDepth(GameDepths.background);
 
     this.court = this.add
       .image(0, this.height - 586, 'court')
       .setOrigin(0.23, 0)
-      .setDepth(1);
+      .setDepth(GameDepths.background);
+  }
+
+  initMissIndicator(ball: Ball) {
+    const { width, centerY } = getSceneBounds(this);
+
+    this.sound.add('miss-1');
+    this.sound.add('miss-2');
+    this.sound.add('miss-3');
+    this.sound.add('miss-4');
+
+    this.missIndicator = this.physics.add
+      .sprite(0, centerY, 'invisible')
+      .setBodySize(width * 3, 1, false)
+      .setOrigin(0.5, 0.5)
+      .setDebugBodyColor(0xff0000);
+
+    this.physics.add.overlap(
+      ball,
+      this.missIndicator,
+      () => {
+        if (!ball.justScored && !ball.justMissed) {
+          ball.justMissed = true;
+          this.playMissSound();
+          this.gameEvents.ballMissed.fire();
+        }
+      },
+      () => {
+        return ball.body.velocity.y >= 0;
+      },
+      this
+    );
+  }
+
+  playMissSound() {
+    this.sound.play(`miss-${Phaser.Math.Between(1, 4)}`);
   }
 }

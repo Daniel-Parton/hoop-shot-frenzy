@@ -1,12 +1,14 @@
 import { Scaler } from '@/utils/Scaler';
 import { GameColors } from 'config/GameColors';
 import { EventController } from '@/config/EventController';
+import { getSceneBounds } from '@/utils/SceneHelper';
+import { GameDepths } from '@/config/GameDepths';
 
 const trajectoryScaler = new Scaler({
   rawMin: -1000,
   rawMax: 1000,
-  scaleMin: -200,
-  scaleMax: 200
+  scaleMin: -300,
+  scaleMax: 300
 });
 
 export class Ball extends Phaser.Physics.Arcade.Sprite {
@@ -18,16 +20,18 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
   isLaunched: boolean = false;
   hasReachedApex: boolean = false;
   justScored: boolean = false;
+  justMissed: boolean = false;
   startTrackTimeEvent: Phaser.Time.TimerEvent;
-  idlePosition: Phaser.Math.Vector2;
+  idleYPosition: number;
   idleScale: number = 1.5;
   launchScale: number = 0.9;
   launchParticles: Phaser.GameObjects.Particles.ParticleEmitter;
 
+  streak: number = 0;
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'ball', 0);
     this.gameEvents = new EventController(scene);
-    this.idlePosition = new Phaser.Math.Vector2(x, y);
+    this.idleYPosition = y;
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this._init();
@@ -51,6 +55,12 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     this._listenForInputs();
 
     this.scene.events.on(Phaser.Scenes.Events.UPDATE, this.update, this);
+    this.gameEvents.ballAtApex.listen(() => {
+      this.setDepth(GameDepths.net - 1);
+    });
+    this.gameEvents.scoreUpdated.listen(({ streak }) => {
+      this.streak = streak;
+    });
   }
 
   private _initLaunchParticles() {
@@ -99,7 +109,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
       callbackScope: this,
       loop: true
     });
-    this._tween({ scale: this.idleScale * 1.1, duration: 100 });
+    this.tween({ scale: this.idleScale * 1.1, duration: 100 });
     this.start = new Phaser.Math.Vector2(pointer.x, pointer.y);
   }
 
@@ -119,11 +129,11 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         var xTrajectory = (-2300 * slope.x) / slope.y;
         this._launch(xTrajectory);
       } else {
-        this._tween({ scale: this.idleScale, duration: 100 });
+        this.tween({ scale: this.idleScale, duration: 100 });
         this.scene.game.canvas.style.cursor = 'grab';
       }
     } else {
-      this._tween({ scale: this.idleScale, duration: 100 });
+      this.tween({ scale: this.idleScale, duration: 100 });
     }
   }
 
@@ -147,7 +157,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     this.setVelocityY(-1750);
     this.setVelocityX(xTrajectory);
     this.setRotation(xTrajectory / 3);
-    this._tween({
+    this.tween({
       scale: this.launchScale,
       rotation: xTrajectory > 0 ? Math.PI / 4 : -Math.PI / 4, // Rotate 45 degrees clockwise or counterclockwise
       duration: 800
@@ -159,22 +169,44 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     this.isDown = false;
     this.hasReachedApex = false;
     this.justScored = false;
-    this.setDepth(4);
+    this.justMissed = false;
+    this.setDepth(GameDepths.ball);
     this.setGravityY(0);
     this.setVelocity(0, 0);
     this.setRotation(0);
     this.setScale(this.idleScale);
+
+    const bounds = getSceneBounds(this.scene);
+
+    const halfWidth = this.displayWidth / 2;
     this.setPosition(
-      this.idlePosition.x,
+      this.streak > 2
+        ? Phaser.Math.Between(bounds.left + halfWidth, bounds.right - halfWidth)
+        : bounds.centerX,
       this.scene.scale.height + this.height
     );
-    this._tween({
-      y: this.idlePosition.y,
+    this.tween({
+      y: this.idleYPosition,
       duration: 300,
       ease: Phaser.Math.Easing.Sine.InOut,
       onComplete: () => {
         this._listenForInputs();
       }
+    });
+  }
+
+  tween(options: {
+    y?: number;
+    scale?: number;
+    rotation?: number;
+    duration: number;
+    ease?: string | Function;
+    onComplete?: () => void;
+  }) {
+    this.scene.tweens.add({
+      targets: this,
+      ease: Phaser.Math.Easing.Linear,
+      ...options
     });
   }
 
@@ -188,20 +220,5 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     this.off('pointerdown', this._handleDragStart, this);
     this.scene.input.off('pointerup', this._handleDragEnd, this);
     this.scene.input.off('pointerupoutside', this._handleDragEnd, this);
-  }
-
-  private _tween(options: {
-    y?: number;
-    scale?: number;
-    rotation?: number;
-    duration: number;
-    ease?: string | Function;
-    onComplete?: () => void;
-  }) {
-    this.scene.tweens.add({
-      targets: this,
-      ease: Phaser.Math.Easing.Linear,
-      ...options
-    });
   }
 }

@@ -1,9 +1,9 @@
 import { GameColors } from '@/config/GameColors';
 import { isNil } from '@/utils/isNil';
 
-export class ImageButton extends Phaser.GameObjects.NineSlice {
+export class NineSliceImageButton extends Phaser.GameObjects.NineSlice {
   private _config: ImageButtonConfig;
-  private _callback: (button: ImageButton) => void;
+  private _callback: (button: NineSliceImageButton) => void;
   private _text: Phaser.GameObjects.Text | null;
   private _highlighted: boolean;
   private _disabled: boolean;
@@ -15,14 +15,22 @@ export class ImageButton extends Phaser.GameObjects.NineSlice {
   constructor(
     scene: Phaser.Scene,
     config: ImageButtonConfig,
-    onUpCallback: (button: ImageButton) => void
+    onUpCallback: (button: NineSliceImageButton) => void
   ) {
+    const t = scene.textures.get(config.texture);
+    const sideWidth = isNil(config.sideWidth)
+      ? t.source[0].width / 7
+      : config.sideWidth;
     super(
       scene,
       config.x,
       config.y,
       config.texture,
-      config.styles?.default?.frame
+      config.styles?.default?.frame,
+      t.source[0].width,
+      t.source[0].height,
+      sideWidth,
+      sideWidth
     );
     this.scene = scene;
     this._config = config;
@@ -45,15 +53,6 @@ export class ImageButton extends Phaser.GameObjects.NineSlice {
     }
     if (!isNil(config.depth)) {
       this.depth = config.depth;
-    }
-    if (!isNil(config.scaleX)) {
-      this.scaleX = config.scaleX;
-    }
-    if (!isNil(config.scaleY)) {
-      this.scaleY = config.scaleY;
-    }
-    if (!isNil(config.scale)) {
-      this.setScale(config.scale);
     }
     if (!isNil(config.alpha)) {
       this.setAlpha(config.alpha);
@@ -371,9 +370,7 @@ export interface ImageButtonConfig {
   y: number;
   angle?: number;
   depth?: number;
-  scaleX?: number;
-  scaleY?: number;
-  scale?: number;
+  sideWidth?: number;
   alpha?: number;
   texture: string;
   styles?: {

@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { Boot } from './scenes/Boot';
 import { Preload } from './scenes/Preload';
 import { Game } from './scenes/Game';
+import { MainMenu } from 'scenes/MainMenu';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -18,6 +19,9 @@ const config: Phaser.Types.Core.GameConfig = {
   },
   input: {
     mouse: {
+      target: window
+    },
+    touch: {
       target: window
     }
   },
@@ -35,7 +39,7 @@ const config: Phaser.Types.Core.GameConfig = {
     fullscreenTarget: 'game-container',
     parent: 'game-container'
   },
-  scene: [Boot, Preload, Game]
+  scene: [Boot, Preload, MainMenu, Game]
 };
 
 new Phaser.Game(config);

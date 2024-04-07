@@ -1,10 +1,12 @@
 import { GameColors } from '@/config/GameColors';
 import { alignToSceneCenter } from '@/utils/SceneHelper';
+import { GameText } from './GameText';
+import { animateReveal } from '@/utils/TweenHelper';
 
 export class LoadingBar extends Phaser.GameObjects.Sprite {
   progress: Phaser.GameObjects.Graphics;
   progressValue: number = 50;
-  text: Phaser.GameObjects.Text;
+  text: GameText;
   initialLoadAnimationComplete: boolean = false;
   finished: boolean = false;
   xPadding: number = 20;
@@ -12,6 +14,7 @@ export class LoadingBar extends Phaser.GameObjects.Sprite {
   revealYOffset: number;
 
   readonly onComplete: () => void;
+
   constructor(
     scene: Phaser.Scene,
     key: string,
@@ -26,17 +29,13 @@ export class LoadingBar extends Phaser.GameObjects.Sprite {
     this.onComplete = onComplete;
     this.setAlpha(0);
     scene.add.existing(this);
-    this.text = scene.add
-      .text(0, 0, ['Loading...'], {
-        fontSize: 70,
-        align: 'center',
-        fontFamily: 'Arial',
-        stroke: GameColors.loadingBar.rgba,
-        strokeThickness: 100 * 0.05,
-        color: GameColors.black.rgba
-      })
-      .setOrigin(0.5, 0.5)
-      .setAlpha(0);
+    this.text = new GameText(scene, {
+      text: 'Loading',
+      alpha: 0,
+      style: {
+        fontSize: 70
+      }
+    });
 
     alignToSceneCenter(scene, [this.text, this], {
       gap: 20,
@@ -48,8 +47,8 @@ export class LoadingBar extends Phaser.GameObjects.Sprite {
   }
 
   private _initReveal() {
-    this._animateReveal(this.text);
-    this._animateReveal(this, {
+    animateReveal(this.text, 'y', this.revealYOffset);
+    animateReveal(this, 'y', this.revealYOffset, {
       delay: 150,
       onComplete: () => this._initLoading()
     });
@@ -89,7 +88,7 @@ export class LoadingBar extends Phaser.GameObjects.Sprite {
 
   fillProgressToPercent(value: number) {
     this.progress.clear();
-    this.progress.fillStyle(GameColors.loadingBar.color, 1);
+    this.progress.fillStyle(GameColors.primary.color, 1);
     this.progress.fillRect(
       this.x - this.width * 0.5 + this.xPadding,
       this.y - this.height * 0.5 + this.yPadding,
@@ -121,24 +120,6 @@ export class LoadingBar extends Phaser.GameObjects.Sprite {
         options?.onComplete?.();
       },
       callbackScope: this
-    });
-  }
-
-  private _animateReveal(
-    target: Phaser.GameObjects.Sprite | Phaser.GameObjects.Text,
-    options?: { duration?: number; delay?: number; onComplete?: () => void }
-  ) {
-    const { duration = 500, onComplete, ...rest } = options || {};
-
-    this.scene.tweens.add({
-      targets: target,
-      alpha: 1,
-      duration,
-      y: target.y + this.revealYOffset,
-      ease: (v) => Phaser.Math.Easing.Back.Out(v, this.revealYOffset * 0.1),
-      callbackScope: this,
-      onComplete,
-      ...rest
     });
   }
 }
