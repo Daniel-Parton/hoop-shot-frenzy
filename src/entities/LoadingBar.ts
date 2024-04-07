@@ -1,5 +1,5 @@
 import { GameColors } from '@/config/GameColors';
-import { getSceneSizeData } from '@/utils/SceneSizeHelper';
+import { alignToSceneCenter } from '@/utils/SceneHelper';
 
 export class LoadingBar extends Phaser.GameObjects.Sprite {
   progress: Phaser.GameObjects.Graphics;
@@ -15,25 +15,33 @@ export class LoadingBar extends Phaser.GameObjects.Sprite {
   constructor(
     scene: Phaser.Scene,
     key: string,
-    options?: { revealYOffset?: number; onComplete?: () => void }
+    options?: {
+      revealYOffset?: number;
+      onComplete?: () => void;
+    }
   ) {
-    const { center } = getSceneSizeData(scene);
-    const { onComplete, revealYOffset = 30 } = options || {};
-    super(scene, center.x, center.y + 75 - revealYOffset, key);
+    const { onComplete, revealYOffset = 50 } = options || {};
+    super(scene, 0, 0, key);
     this.revealYOffset = revealYOffset;
     this.onComplete = onComplete;
     this.setAlpha(0);
     scene.add.existing(this);
     this.text = scene.add
-      .text(center.x, center.y - this.revealYOffset, 'Loading', {
-        fontSize: 60,
+      .text(0, 0, ['Loading...'], {
+        fontSize: 70,
+        align: 'center',
         fontFamily: 'Arial',
-        stroke: GameColors.black.rgba,
-        strokeThickness: 10,
-        color: GameColors.loadingBar.rgba
+        stroke: GameColors.loadingBar.rgba,
+        strokeThickness: 100 * 0.05,
+        color: GameColors.black.rgba
       })
       .setOrigin(0.5, 0.5)
       .setAlpha(0);
+
+    alignToSceneCenter(scene, [this.text, this], {
+      gap: 20,
+      offset: { y: -this.revealYOffset }
+    });
 
     this._initReveal();
     this.scene.load.on('progress', this._handleLoadProgress, this);
@@ -42,7 +50,7 @@ export class LoadingBar extends Phaser.GameObjects.Sprite {
   private _initReveal() {
     this._animateReveal(this.text);
     this._animateReveal(this, {
-      delay: 300,
+      delay: 150,
       onComplete: () => this._initLoading()
     });
   }
@@ -118,16 +126,19 @@ export class LoadingBar extends Phaser.GameObjects.Sprite {
 
   private _animateReveal(
     target: Phaser.GameObjects.Sprite | Phaser.GameObjects.Text,
-    options?: { delay?: number; onComplete?: () => void }
+    options?: { duration?: number; delay?: number; onComplete?: () => void }
   ) {
+    const { duration = 500, onComplete, ...rest } = options || {};
+
     this.scene.tweens.add({
       targets: target,
-      duration: 500,
-      y: target.y + this.revealYOffset,
       alpha: 1,
-      ease: Phaser.Math.Easing.Linear,
+      duration,
+      y: target.y + this.revealYOffset,
+      ease: (v) => Phaser.Math.Easing.Back.Out(v, this.revealYOffset * 0.1),
       callbackScope: this,
-      ...options
+      onComplete,
+      ...rest
     });
   }
 }

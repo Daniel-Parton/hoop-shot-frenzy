@@ -141,7 +141,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     // xTrajectory = 164.07142857142927;
 
     //right rim passthrough and bounce
-    xTrajectory = 40;
+    // xTrajectory = 40;
 
     this.setGravityY(1800);
     this.setVelocityY(-1750);

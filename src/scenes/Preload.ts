@@ -1,4 +1,5 @@
 import { LoadingBar } from '@/entities/LoadingBar';
+import { fadeToScene } from '@/utils/SceneHelper';
 
 export class Preload extends Phaser.Scene {
   loadingBar: LoadingBar;
@@ -7,10 +8,10 @@ export class Preload extends Phaser.Scene {
   }
 
   preload() {
-    this.add.sprite(0, 0, 'preload-bg').setOrigin(0, 0);
+    this.add.sprite(0, 0, 'menu-bg').setOrigin(0, 0);
     this.loadingBar = new LoadingBar(this, 'loading-bar', {
       onComplete: () => {
-        this.scene.start('Game');
+        fadeToScene('Game', this);
       }
     });
 
@@ -33,7 +34,15 @@ export class Preload extends Phaser.Scene {
     this.loadAudio('net');
   }
 
-  create() {}
+  create() {
+    this.input.on(
+      'pointerdown',
+      () => {
+        this.scene.restart();
+      },
+      this
+    );
+  }
 
   loadAudio(path: string) {
     this.load.audio(

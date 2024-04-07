@@ -1,28 +1,11 @@
-export class Preload extends Phaser.Scene {
+export class MainMenu extends Phaser.Scene {
   constructor() {
-    super('Preload');
-  }
-
-  preload() {
-    this.load.setPath('./assets');
-
-    this.load.image('invisible', 'invisible.png');
-    this.load.image('court', 'court.jpg');
-    this.load.image('seats', 'seats.png');
-    this.load.image('barrier', 'barrier.jpg');
-    this.load.image('ball', 'ball.png');
-    this.load.image('backboard', 'backboard.jpg');
-    this.load.image('shoot-particle', 'shoot-particle.png');
-    this.load.image('mast', 'mast.png');
-    this.load.image('rim', 'rim.png');
-    this.load.atlas('net', 'net.png', 'net.json');
-
-    this.loadAudio('score');
-    this.loadAudio('shoot');
-    this.loadAudio('net');
+    super('MainMenu');
   }
 
   create() {
+    this.add.sprite(0, 0, 'menu-bg').setOrigin(0, 0);
+
     this.scene.start('Play');
   }
 

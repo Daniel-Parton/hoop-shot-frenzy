@@ -31,6 +31,8 @@ export class Game extends Phaser.Scene {
   }
 
   create() {
+    this.cameras.main.fadeIn(250);
+
     this.initEnvironment();
     this.score = new Score(this);
     this.backboard = new Backboard(this);

@@ -1,4 +1,4 @@
-import { getSceneSizeData } from '@/utils/SceneSizeHelper';
+import { getSceneBounds } from '@/utils/SceneHelper';
 
 import { Net } from './Net';
 import { Ball } from './Ball';
@@ -20,10 +20,10 @@ export class Backboard extends Phaser.GameObjects.Group {
   }
 
   private _init() {
-    const { center: sceneCenter } = getSceneSizeData(this.scene);
+    const sceneBounds = getSceneBounds(this.scene);
 
     this.board = this.scene.add
-      .image(sceneCenter.x, 50, 'backboard')
+      .image(sceneBounds.centerX, 50, 'backboard')
       .setOrigin(0.5, 0)
       .setDepth(GameDepths.backboard);
 
