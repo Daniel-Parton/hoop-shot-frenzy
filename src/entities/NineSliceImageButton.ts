@@ -2,7 +2,7 @@ import { GameColors } from '@/config/GameColors';
 import { isNil } from '@/utils/isNil';
 
 export class NineSliceImageButton extends Phaser.GameObjects.NineSlice {
-  private _config: ImageButtonConfig;
+  private _config: NineSliceImageButtonConfig;
   private _callback: (button: NineSliceImageButton) => void;
   private _text: Phaser.GameObjects.Text | null;
   private _highlighted: boolean;
@@ -14,7 +14,7 @@ export class NineSliceImageButton extends Phaser.GameObjects.NineSlice {
 
   constructor(
     scene: Phaser.Scene,
-    config: ImageButtonConfig,
+    config: NineSliceImageButtonConfig,
     onUpCallback: (button: NineSliceImageButton) => void
   ) {
     const t = scene.textures.get(config.texture);
@@ -23,8 +23,8 @@ export class NineSliceImageButton extends Phaser.GameObjects.NineSlice {
       : config.sideWidth;
     super(
       scene,
-      config.x,
-      config.y,
+      config.x ?? 0,
+      config.y ?? 0,
       config.texture,
       config.styles?.default?.frame,
       t.source[0].width,
@@ -57,11 +57,16 @@ export class NineSliceImageButton extends Phaser.GameObjects.NineSlice {
     if (!isNil(config.alpha)) {
       this.setAlpha(config.alpha);
     }
+
+    if (!isNil(config.defaultScale)) {
+      this.setScale(config.defaultScale);
+      this._defaultScale = this.scale;
+    }
+
     this.addText();
     this.setOrigin(0.5, 0.5);
     this.enable();
 
-    this._defaultScale = this.scale;
     this.scene.add.existing(this);
   }
 
@@ -211,7 +216,7 @@ export class NineSliceImageButton extends Phaser.GameObjects.NineSlice {
     }
     const xDiff: number = newX - this.x;
     const yDiff: number = newY - this.y;
-    const tween: Phaser.Tweens.Tween = this.scene.tweens.add({
+    this.scene.tweens.add({
       targets: targets,
       x: '+=' + xDiff,
       y: '+=' + yDiff,
@@ -312,8 +317,8 @@ export class NineSliceImageButton extends Phaser.GameObjects.NineSlice {
   }
 
   private _setStyle(
-    style: keyof ImageButtonConfig['styles'],
-    fallbacks?: (keyof ImageButtonConfig['styles'])[]
+    style: keyof NineSliceImageButtonConfig['styles'],
+    fallbacks?: (keyof NineSliceImageButtonConfig['styles'])[]
   ) {
     if (!this._config.styles) {
       return;
@@ -329,8 +334,8 @@ export class NineSliceImageButton extends Phaser.GameObjects.NineSlice {
   }
 
   private _setTextStyle(
-    style: keyof ImageButtonConfig['text']['styles'],
-    fallbacks?: (keyof ImageButtonConfig['text']['styles'])[]
+    style: keyof NineSliceImageButtonConfig['text']['styles'],
+    fallbacks?: (keyof NineSliceImageButtonConfig['text']['styles'])[]
   ) {
     if (!this._text || !this._config.text?.styles) {
       return;
@@ -364,13 +369,14 @@ export class NineSliceImageButton extends Phaser.GameObjects.NineSlice {
   }
 }
 
-export interface ImageButtonConfig {
+export interface NineSliceImageButtonConfig {
   id?: string;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
   angle?: number;
   depth?: number;
   sideWidth?: number;
+  defaultScale?: number;
   alpha?: number;
   texture: string;
   styles?: {

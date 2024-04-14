@@ -1,7 +1,7 @@
 import { getSceneBounds } from '@/utils/SceneHelper';
+import { Ball } from '@/entities/Ball';
 
 import { Net } from './Net';
-import { Ball } from './Ball';
 import { Rim } from './Rim';
 import { GameDepths } from '@/config/GameDepths';
 

@@ -45,7 +45,7 @@ export class Preload extends Phaser.Scene {
   loadAudio(path: string) {
     this.load.audio(
       path,
-      ['.mp3', '.ogg', '.m4a'].map((ext) => `${path}${ext}`)
+      ['.mp3', '.ogg', '.m4a', '.wav'].map((ext) => `${path}${ext}`)
     );
   }
 }

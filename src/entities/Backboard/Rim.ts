@@ -1,5 +1,5 @@
 import { GameDepths } from '@/config/GameDepths';
-import { Ball } from './Ball';
+import { Ball } from '@/entities/Ball';
 import { EventController } from '@/config/EventController';
 
 export class Rim extends Phaser.GameObjects.Container {
@@ -8,7 +8,7 @@ export class Rim extends Phaser.GameObjects.Container {
   leftRim: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   rightRim: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   scoreIndicator: Phaser.GameObjects.Image;
-  justScored: boolean = false;
+  sound: Phaser.Sound.BaseSound;
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y);
     this.gameEvents = new EventController(this.scene);
@@ -18,6 +18,8 @@ export class Rim extends Phaser.GameObjects.Container {
   }
 
   private _init() {
+    this.sound = this.scene.sound.add('backboard', { volume: 0.2 });
+
     this.setDepth(GameDepths.rim);
     this.frontRim = this.scene.add
       .image(0, 0, 'rim')
@@ -33,15 +35,13 @@ export class Rim extends Phaser.GameObjects.Container {
     this.leftRim = this._addSideRim(rimX);
     this.rightRim = this._addSideRim(rimX + width * 0.9);
     this.scoreIndicator = this.scene.physics.add
-      .sprite(rimX + 30, 30, 'invisible')
+      .sprite(rimX + 30, 40, 'invisible')
       .setBodySize(width - 60, 1, false)
       .setOrigin(0, 0)
       .setDebugBodyColor(0x00ff00);
 
     this.add(this.scoreIndicator);
     this.setVisible(true);
-
-    this.gameEvents.ballReset.listen(this._handleBallReset, this);
   }
 
   handleBallCollision(ball: Ball) {
@@ -57,7 +57,10 @@ export class Rim extends Phaser.GameObjects.Container {
       () => {
         if (!ball.justScored) {
           ball.justScored = true;
-          this.gameEvents.ballScored.fire();
+          this.gameEvents.ballScored.fire({
+            ballBounds: ball.getBounds(),
+            rimHit: ball.rimHit
+          });
         }
       },
       () => {
@@ -69,14 +72,18 @@ export class Rim extends Phaser.GameObjects.Container {
 
   private _addSideRim(x: number) {
     const sideRim = this.scene.physics.add
-      .sprite(x, 0, 'rim')
-      .setOrigin(0, 0)
-      .setScale(0.2, 2)
+      .sprite(x, 0, 'invisible')
+      .setBodySize(
+        this.frontRim.displayHeight,
+        this.frontRim.displayHeight,
+        false
+      )
+      .setOrigin(0.5, 0.5)
       .setImmovable(true)
       .setDebugBodyColor(0x00ff00)
       .refreshBody();
 
-    sideRim.body.setCircle(sideRim.displayWidth / 2);
+    sideRim.body.setCircle(this.frontRim.height);
     this.add(sideRim);
     return sideRim;
   }
@@ -89,6 +96,7 @@ export class Rim extends Phaser.GameObjects.Container {
       ball,
       sideRim,
       (b: Ball) => {
+        b.rimHit = true;
         b.tween({
           rotation: ball.body.velocity.x > 0 ? Math.PI / 4 : -Math.PI / 4,
           duration: 600
@@ -102,11 +110,8 @@ export class Rim extends Phaser.GameObjects.Container {
     );
   }
 
-  private _handleBallReset() {
-    this.justScored = false;
-  }
-
   private _playSound() {
-    this.scene.sound.play('backboard', { volume: 0.5 });
+    this.sound.stop();
+    this.sound.play();
   }
 }

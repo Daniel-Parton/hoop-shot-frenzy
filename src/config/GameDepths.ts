@@ -4,5 +4,6 @@ export const GameDepths = {
   ballAtApex: 3,
   backboard: 2,
   rim: 3,
-  net: 4
+  net: 4,
+  floatingScore: 5
 };

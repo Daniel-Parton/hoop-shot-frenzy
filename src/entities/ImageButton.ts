@@ -1,7 +1,7 @@
 import { GameColors } from '@/config/GameColors';
 import { isNil } from '@/utils/isNil';
 
-export class ImageButton extends Phaser.GameObjects.NineSlice {
+export class ImageButton extends Phaser.GameObjects.Image {
   private _config: ImageButtonConfig;
   private _callback: (button: ImageButton) => void;
   private _text: Phaser.GameObjects.Text | null;
@@ -212,7 +212,7 @@ export class ImageButton extends Phaser.GameObjects.NineSlice {
     }
     const xDiff: number = newX - this.x;
     const yDiff: number = newY - this.y;
-    const tween: Phaser.Tweens.Tween = this.scene.tweens.add({
+    this.scene.tweens.add({
       targets: targets,
       x: '+=' + xDiff,
       y: '+=' + yDiff,
@@ -227,12 +227,7 @@ export class ImageButton extends Phaser.GameObjects.NineSlice {
     this._syncText();
   }
 
-  checkHitRect(
-    hitArea: Phaser.Geom.Rectangle,
-    x: number,
-    y: number,
-    gameObject: Phaser.GameObjects.Image
-  ): boolean {
+  checkHitRect(hitArea: Phaser.Geom.Rectangle, x: number, y: number): boolean {
     if (
       x >= hitArea.x &&
       x <= hitArea.x + hitArea.width &&

@@ -1,9 +1,12 @@
 import { LocalStorageHelper } from '@/utils/LocalStorageHelper';
 import { EventController } from '@/config/EventController';
+import { FloatingScore } from './FloatingScore';
 
 const baseKey = 'hoop_';
 export class Score extends Phaser.GameObjects.Container {
   gameEvents: EventController;
+  floatingScore: FloatingScore;
+
   bestScoreKey = `${baseKey}bestScore`;
 
   currentText: Phaser.GameObjects.Text;
@@ -16,17 +19,30 @@ export class Score extends Phaser.GameObjects.Container {
   interval: number = 25;
   delta: number = 0;
 
+  scoreSoundPlayingKey: number;
+  scoreSounds: Phaser.Sound.NoAudioSound[] = [];
+
   constructor(scene: Phaser.Scene) {
     super(scene, 0, 0);
     this.gameEvents = new EventController(this.scene);
+    this.floatingScore = new FloatingScore({ scene: this.scene });
     scene.add.existing(this);
     scene.physics.add.existing(this as any);
     this.init();
   }
 
   private init() {
-    this.scene.sound.add('score-1');
-    this.scene.sound.add('score-2', { volume: 0.5 });
+    this.scoreSounds.push(
+      this.scene.sound.add('score-1', {
+        volume: 1.2
+      }) as Phaser.Sound.NoAudioSound
+    );
+    this.scoreSounds.push(
+      this.scene.sound.add('score-2', {
+        volume: 0.2
+      }) as Phaser.Sound.NoAudioSound
+    );
+
     this.best = LocalStorageHelper.getInt(this.bestScoreKey);
     const gameWidth = this.scene.scale.width;
     this.currentText = this.scene.add
@@ -51,9 +67,14 @@ export class Score extends Phaser.GameObjects.Container {
     this.gameEvents.ballMissed.listen(this._handleMiss, this);
   }
 
-  private _handleScore() {
-    ++this.current;
+  private _handleScore(payload: {
+    ballBounds: Phaser.Geom.Rectangle;
+    rimHit: boolean;
+  }) {
+    const score = payload.rimHit ? 1 : 2;
+    this.current += score;
     ++this.streak;
+    this.floatingScore.showScore(payload.ballBounds, score);
     this.scene.time.delayedCall(500, this._playScoreSound, null, this);
     this.currentText.text = 'Score: ' + this.current.toLocaleString();
     if (this.current > this.best) {
@@ -78,6 +99,7 @@ export class Score extends Phaser.GameObjects.Container {
 
   private _handleMiss() {
     this.streak = 0;
+    this._stopScoreSound();
     this.gameEvents.scoreUpdated.fire({
       score: this.current,
       streak: this.streak
@@ -85,6 +107,17 @@ export class Score extends Phaser.GameObjects.Container {
   }
 
   private _playScoreSound() {
-    this.scene.sound.play(`score-${Phaser.Math.Between(1, 2)}`);
+    this._stopScoreSound();
+    this.scoreSoundPlayingKey = Phaser.Math.Between(
+      0,
+      this.scoreSounds.length - 1
+    );
+    this.scoreSounds[this.scoreSoundPlayingKey].play();
+  }
+
+  private _stopScoreSound() {
+    if (this.scoreSoundPlayingKey) {
+      this.scoreSounds[this.scoreSoundPlayingKey].stop();
+    }
   }
 }

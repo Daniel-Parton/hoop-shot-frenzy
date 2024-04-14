@@ -30,10 +30,10 @@ export class LoadingBar extends Phaser.GameObjects.Sprite {
     this.setAlpha(0);
     scene.add.existing(this);
     this.text = new GameText(scene, {
-      text: 'Loading',
+      text: 'LOADING...',
       alpha: 0,
       style: {
-        fontSize: 70
+        fontSize: 60
       }
     });
 

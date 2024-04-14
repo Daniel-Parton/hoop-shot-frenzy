@@ -1,7 +1,10 @@
 export class EventController {
   readonly ballAtApex: EventType;
   readonly ballReset: EventType;
-  readonly ballScored: EventType;
+  readonly ballScored: EventType<{
+    ballBounds: Phaser.Geom.Rectangle;
+    rimHit: boolean;
+  }>;
   readonly ballMissed: EventType;
   readonly scoreUpdated: EventType<{ score: number; streak: number }>;
 

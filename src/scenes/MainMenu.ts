@@ -33,9 +33,8 @@ export class MainMenu extends Phaser.Scene {
     this.playBtn = new NineSliceImageButton(
       this,
       {
-        x: 0,
-        y: 0,
         alpha: 0,
+        defaultScale: 1.5,
         texture: 'btn',
         styles: {
           default: { tint: GameColors.primary.lighten(30).color },

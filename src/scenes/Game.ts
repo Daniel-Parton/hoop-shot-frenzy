@@ -27,6 +27,7 @@ export class Game extends Phaser.Scene {
   seats: Phaser.GameObjects.Image;
   score: Score;
   missIndicator: Phaser.GameObjects.Image;
+  missSoundPlayingKey: string;
 
   constructor() {
     super('Game');
@@ -47,6 +48,7 @@ export class Game extends Phaser.Scene {
 
     this.backboard.handleBallCollision(this.ball);
     this.initMissIndicator(this.ball);
+    this.gameEvents.ballScored.listen(this.stopMissSound, this);
   }
 
   update(_, delta: number): void {}
@@ -97,6 +99,14 @@ export class Game extends Phaser.Scene {
   }
 
   playMissSound() {
-    this.sound.play(`miss-${Phaser.Math.Between(1, 4)}`);
+    this.stopMissSound();
+    this.missSoundPlayingKey = `miss-${Phaser.Math.Between(1, 4)}`;
+    this.sound.play(this.missSoundPlayingKey);
+  }
+
+  stopMissSound() {
+    if (this.missSoundPlayingKey) {
+      this.sound.stopByKey(this.missSoundPlayingKey);
+    }
   }
 }

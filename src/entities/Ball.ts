@@ -21,6 +21,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
   hasReachedApex: boolean = false;
   justScored: boolean = false;
   justMissed: boolean = false;
+  rimHit: boolean = false;
   startTrackTimeEvent: Phaser.Time.TimerEvent;
   idleYPosition: number;
   idleScale: number = 1.5;
@@ -45,7 +46,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     this.setDepth(4);
     this.setScale(this.idleScale);
     this.body.setCircle(this.width / 2);
-    this.setBounceY(1);
+    this.setBounceY(1.2);
     this.setBounceX(0.8);
     this.setInteractive({
       cursor: 'grab'
@@ -73,13 +74,14 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         tint: GameColors.white.color,
         color: [GameColors.white.color],
         speedY: { min: 20, max: 50 },
+        gravityY: -1800,
         lifespan: { min: 100, max: 300 },
         alpha: { start: 0.5, end: 0, ease: 'Sine.easeIn' },
-        scale: { start: 0.3, end: 0.1 },
+        scale: { start: 0.3, end: 0.3 },
         frequency: 30,
         blendMode: Phaser.BlendModes.ADD,
         follow: this,
-        followOffset: { y: this.height / 2, x: 0 },
+        followOffset: { y: this.height * 0.8, x: 0 },
         delay: 0
       }
     );
@@ -170,6 +172,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     this.hasReachedApex = false;
     this.justScored = false;
     this.justMissed = false;
+    this.rimHit = false;
     this.setDepth(GameDepths.ball);
     this.setGravityY(0);
     this.setVelocity(0, 0);
@@ -188,7 +191,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     this.tween({
       y: this.idleYPosition,
       duration: 300,
-      ease: Phaser.Math.Easing.Sine.InOut,
+      ease: Phaser.Math.Easing.Back.Out,
       onComplete: () => {
         this._listenForInputs();
       }

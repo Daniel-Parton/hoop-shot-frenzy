@@ -1,5 +1,5 @@
 import { EventController } from '@/config/EventController';
-import { Ball } from './Ball';
+import { Ball } from '@/entities/Ball';
 import { GameDepths } from '@/config/GameDepths';
 import { GameColors } from '@/config/GameColors';
 
